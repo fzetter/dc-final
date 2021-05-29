@@ -44,7 +44,7 @@ The script will generate a new directory `frames` with ~130 images.
 - Login into your system and save the generated `token`
 
 ```
-curl -u username:password http://localhost:8080/login
+curl -u username:password -X POST http://localhost:8080/login
 ```
 
 
