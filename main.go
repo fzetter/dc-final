@@ -5,10 +5,9 @@ import (
 	"log"
 	"math/rand"
 	"time"
-
-	"github.com/CodersSquad/dc-final/api"
-	"github.com/CodersSquad/dc-final/controller"
-	"github.com/CodersSquad/dc-final/scheduler"
+	"github.com/fzetter/dc-final/api"
+	"github.com/fzetter/dc-final/controller"
+	"github.com/fzetter/dc-final/scheduler"
 )
 
 func main() {
