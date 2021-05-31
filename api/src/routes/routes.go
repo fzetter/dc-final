@@ -15,7 +15,9 @@ import (
 // ROUTES
 // ******
 
-func Init(app *gin.Engine) *gin.Engine {
+func Init(app *gin.Engine, adminAccess chan string) *gin.Engine {
+
+  AdminAuth(adminAccess)
 
  // About
  aboutRoutes := app.Group("/about")
@@ -49,6 +51,11 @@ func Init(app *gin.Engine) *gin.Engine {
 // *****
 // AUTH
 // *****
+
+func AdminAuth(adminAccess chan string) {
+  authToken := utils.AdminAuth()
+  go func() { adminAccess <- authToken }()
+}
 
 func Authorization(c *gin.Context) {
 

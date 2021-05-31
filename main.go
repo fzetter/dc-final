@@ -13,18 +13,20 @@ import (
 func main() {
 	log.Println("Welcome to the Distributed and Parallel Image Processing System")
 
+	adminAccess := make(chan string)
+
 	// Start Controller
-	go controller.Start()
+	go controller.Start(adminAccess)
 
 	// Start Scheduler
 	jobs := make(chan scheduler.Job)
 	go scheduler.Start(jobs)
-	
+
 	// Send sample jobs
 	sampleJob := scheduler.Job{Address: "localhost:50051", RPCName: "hello"}
 
 	// API
-	go api.Start()
+	go api.Start(adminAccess)
 
 	for {
 		sampleJob.RPCName = fmt.Sprintf("hello-%v", rand.Intn(10000))

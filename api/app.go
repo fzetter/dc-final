@@ -8,7 +8,7 @@ import (
 
 var router *gin.Engine
 
-func Start() {
+func Start(adminAccess chan string) {
     app := gin.Default()
     app.MaxMultipartMemory = 8 << 20 // 8 MiB
 
@@ -30,7 +30,7 @@ func Start() {
     // ******
     // ROUTES
     // ******
-    routes.Init(app)
+    routes.Init(app, adminAccess)
 
     app.Run(":8080")
 }
