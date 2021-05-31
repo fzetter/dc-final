@@ -2,7 +2,7 @@ package controller
 
 import (
 	"fmt"
-	//"log"
+	"log"
 	"os"
 	"time"
 
@@ -45,6 +45,26 @@ func date() string {
 }
 
 /*
+   Message Passing Socket Configuration
+*/
+func MessagePassingConfig() (pubSock mangos.Socket) {
+	// PubSub
+	var sock mangos.Socket
+	var err error
+	if sock, err = pub.NewSocket(); err != nil { die("Can't get new pub socket: %s", err) }
+	if err = sock.Listen(controllerAddress); err != nil { die("Can't listen on pub socket: %s", err.Error()) }
+	return sock
+}
+
+func Publish(sock mangos.Socket) {
+	var err error
+	d := date()
+	log.Printf("Controller: Publishing Date %s\n", d)
+	if err = sock.Send([]byte(d)); err != nil { die("Failed publishing: %s", err.Error()) }
+	time.Sleep(time.Second * 3)
+}
+
+/*
    Start
 */
 func Start(adminAccess chan string) {
@@ -53,14 +73,7 @@ func Start(adminAccess chan string) {
 	token := <-adminAccess
 	bearer := "Bearer " + token
 
-	var sock mangos.Socket
-	var err error
-
-	// Create Socket
-	if sock, err = pub.NewSocket(); err != nil { die("Can't get new pub socket: %s", err) }
-
-	// Listen Socket
-	if err = sock.Listen(controllerAddress); err != nil { die("Can't listen on pub socket: %s", err.Error()) }
+	pubSock := MessagePassingConfig()
 
 	for {
 		// Obtain Workloads List
@@ -82,13 +95,7 @@ func Start(adminAccess chan string) {
     	fmt.Println(element.Workload_Name)
     }
 
+		Publish(pubSock)
 
-		// Could also use sock.RecvMsg to get header
-		d := date()
-		//log.Printf("Controller: Publishing Date %s\n", d)
-
-		if err = sock.Send([]byte(d)); err != nil { die("Failed publishing: %s", err.Error()) }
-
-		time.Sleep(time.Second * 3)
 	}
 }

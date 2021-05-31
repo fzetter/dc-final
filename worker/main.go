@@ -7,12 +7,14 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 
-	"github.com/anthonynsimon/bild/effect"
+	//"github.com/anthonynsimon/bild/effect"
 
 	pb "github.com/fzetter/dc-final/proto"
 	"go.nanomsg.org/mangos"
 	"go.nanomsg.org/mangos/protocol/sub"
+	"go.nanomsg.org/mangos/protocol/rep"
 	"google.golang.org/grpc"
 
 	// register transports
@@ -43,6 +45,14 @@ func die(format string, v ...interface{}) {
 }
 
 /*
+   Date
+*/
+func date() string {
+	return time.Now().Format(time.ANSIC)
+}
+
+
+/*
    Say Hello
 	 Implements helloworld.GreeterServer
 */
@@ -51,6 +61,9 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
 }
 
+/*
+   Grayscale
+*/
 func (s *server) GrayscaleFilter(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
   return &pb.HelloReply{Message: "Grayscale Filter " + in.GetName()}, nil
 }
@@ -65,28 +78,62 @@ func init() {
 }
 
 /*
-   Join Cluster
-   Joins the controller message-passing server
+   Message Passing Socket Configuration
 */
-func joinCluster() {
+
+func MessagePassingConfig() (subSock mangos.Socket) {
+	// PubSub
+	var sock mangos.Socket
+	var err error
+	if sock, err = sub.NewSocket(); err != nil {die("Can't get new sub socket: %s", err.Error()) }
+	log.Printf("Connecting to controller on: %s", controllerAddress)
+	if err = sock.Dial(controllerAddress); err != nil { die("Can't dial on sub socket: %s", err.Error()) }
+	err = sock.SetOption(mangos.OptionSubscribe, []byte(""))
+	if err != nil { die("Cannot subscribe: %s", err.Error()) }
+	return sock
+
+}
+
+func Subscribe(sock mangos.Socket) {
+	var msg []byte
+	var err error
+	if msg, err = sock.Recv(); err != nil { die("Cannot recv: %s", err.Error()) }
+	log.Printf("Message-Passing: Worker(%s): Received %s\n", workerName, string(msg))
+}
+
+func Reply() {
 	var sock mangos.Socket
 	var err error
 	var msg []byte
 
-	if sock, err = sub.NewSocket(); err != nil { die("Can't get new sub socket: %s", err.Error()) }
+	if sock, err = rep.NewSocket(); err != nil { die("Can't get new rep socket: %s", err) }
+	if err = sock.Listen(controllerAddress); err != nil { die("Can't listen on rep socket: %s", err.Error()) }
 
-	log.Printf("Connecting to controller on: %s", controllerAddress)
-	if err = sock.Dial(controllerAddress); err != nil { die("Can't dial on sub socket: %s", err.Error()) }
-
-	// Empty byte array effectively subscribes to everything
-	err = sock.SetOption(mangos.OptionSubscribe, []byte(""))
-	if err != nil { die("Cannot subscribe: %s", err.Error()) }
 	for {
-		if msg, err = sock.Recv(); err != nil {
-			die("Cannot recv: %s", err.Error())
+
+		msg, err = sock.Recv()
+		if err != nil { die("Cannot receive on rep socket: %s", err.Error()) }
+
+		if string(msg) == "WORKER-STATE" {
+			fmt.Println("NODE0: RECEIVED STATE REQUEST")
+			d := date()
+			fmt.Printf("NODE0: SENDING DATE %s\n", d)
+			err = sock.Send([]byte(d))
+			if err != nil { die("Can't send reply: %s", err.Error()) }
 		}
-		log.Printf("Message-Passing: Worker(%s): Received %s\n", workerName, string(msg))
+
 	}
+
+}
+
+func joinCluster() {
+
+	subSock := MessagePassingConfig()
+
+	for {
+		Subscribe(subSock)
+	}
+
 }
 
 /*
@@ -112,7 +159,7 @@ func getAvailablePort() int {
 func main() {
 	flag.Parse()
 
-	// Subscribe to Controller
+	// Message Passing Config
 	go joinCluster()
 
 	// Setup Worker RPC Server
@@ -124,4 +171,5 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterGreeterServer(s, &server{})
 	if err := s.Serve(lis); err != nil { log.Fatalf("Failed to serve: %v", err) }
+
 }
