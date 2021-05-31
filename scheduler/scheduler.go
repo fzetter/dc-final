@@ -19,6 +19,9 @@ type Job struct {
 	RPCName string
 }
 
+/*
+   Schedule
+*/
 func schedule(job Job) {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(job.Address, grpc.WithInsecure(), grpc.WithBlock())
@@ -37,6 +40,9 @@ func schedule(job Job) {
 	log.Printf("Scheduler: RPC respose from %s : %s", job.Address, r.GetMessage())
 }
 
+/*
+   Start
+*/
 func Start(jobs chan Job) error {
 	for {
 		job := <-jobs

@@ -10,6 +10,6 @@ func About(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 			"class": "Distributed Computing",
 			"student": "Fernanda Zetter",
-			"challenge": "second-partial",
+			"challenge": "Final",
 	})
 }

@@ -32,42 +32,49 @@ var (
 	tags              = ""
 )
 
+/*
+   Die
+*/
 func die(format string, v ...interface{}) {
 	fmt.Fprintln(os.Stderr, fmt.Sprintf(format, v...))
 	os.Exit(1)
 }
 
-// SayHello implements helloworld.GreeterServer
+/*
+   Say Hello
+	 Implements helloworld.GreeterServer
+*/
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	log.Printf("RPC: Received: %v", in.GetName())
 	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
 }
 
+/*
+   Init
+*/
 func init() {
 	flag.StringVar(&controllerAddress, "controller", "tcp://localhost:40899", "Controller address")
 	flag.StringVar(&workerName, "worker-name", "hard-worker", "Worker Name")
 	flag.StringVar(&tags, "tags", "gpu,superCPU,largeMemory", "Comma-separated worker tags")
 }
 
-// joinCluster is meant to join the controller message-passing server
+/*
+   Join Cluster
+   Joins the controller message-passing server
+*/
 func joinCluster() {
 	var sock mangos.Socket
 	var err error
 	var msg []byte
 
-	if sock, err = sub.NewSocket(); err != nil {
-		die("can't get new sub socket: %s", err.Error())
-	}
+	if sock, err = sub.NewSocket(); err != nil { die("Can't get new sub socket: %s", err.Error()) }
 
 	log.Printf("Connecting to controller on: %s", controllerAddress)
-	if err = sock.Dial(controllerAddress); err != nil {
-		die("can't dial on sub socket: %s", err.Error())
-	}
+	if err = sock.Dial(controllerAddress); err != nil { die("Can't dial on sub socket: %s", err.Error()) }
+
 	// Empty byte array effectively subscribes to everything
 	err = sock.SetOption(mangos.OptionSubscribe, []byte(""))
-	if err != nil {
-		die("cannot subscribe: %s", err.Error())
-	}
+	if err != nil { die("Cannot subscribe: %s", err.Error()) }
 	for {
 		if msg, err = sock.Recv(); err != nil {
 			die("Cannot recv: %s", err.Error())
@@ -76,6 +83,9 @@ func joinCluster() {
 	}
 }
 
+/*
+   Obtain Available Port
+*/
 func getAvailablePort() int {
 	port := defaultRPCPort
 	for {
@@ -90,6 +100,9 @@ func getAvailablePort() int {
 	return port
 }
 
+/*
+   Main
+*/
 func main() {
 	flag.Parse()
 

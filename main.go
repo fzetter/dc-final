@@ -19,6 +19,7 @@ func main() {
 	// Start Scheduler
 	jobs := make(chan scheduler.Job)
 	go scheduler.Start(jobs)
+	
 	// Send sample jobs
 	sampleJob := scheduler.Job{Address: "localhost:50051", RPCName: "hello"}
 

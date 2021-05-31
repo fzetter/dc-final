@@ -24,12 +24,19 @@ func Init(app *gin.Engine) *gin.Engine {
  }
 
  // Images
- app.POST("/upload", Authorization, controllers.Upload)
+ app.POST("/images", Authorization, controllers.Upload)
 
  // Sessions
  app.POST("/login", controllers.Login)
  app.DELETE("/logout", Authorization, controllers.Logout)
  app.GET("/status", Authorization, controllers.Status)
+
+  // Workloads
+  workloadRoutes := app.Group("/workloads").Use(Authorization)
+  {
+   workloadRoutes.POST("/", controllers.CreateWorkload)
+   workloadRoutes.GET("/:workload_id", controllers.GetWorkload)
+  }
 
  return app
 }
