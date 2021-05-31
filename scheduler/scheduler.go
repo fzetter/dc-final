@@ -17,6 +17,8 @@ import (
 type Job struct {
 	Address string
 	RPCName string
+	WorkloadId string
+	Filter string
 }
 
 /*

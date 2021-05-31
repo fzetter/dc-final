@@ -15,6 +15,7 @@ import (
 	"go.nanomsg.org/mangos/protocol/pub"
 	"go.nanomsg.org/mangos/protocol/req"
 
+	"github.com/fzetter/dc-final/scheduler"
 	"github.com/fzetter/dc-final/api/src/utils"
 
 	// register transports
@@ -106,7 +107,7 @@ func Request(sock mangos.Socket) {
 /*
    Start
 */
-func Start(adminAccess chan string) {
+func Start(adminAccess chan string, jobs chan scheduler.Job) {
 
 	// API Admin Auth
 	token := <-adminAccess
@@ -131,7 +132,15 @@ func Start(adminAccess chan string) {
 		var data []WorkloadStruct
     if err := json.Unmarshal([]byte(string(body)), &data); err != nil { die("Error on data conversion: %s", err.Error()) }
     for _, element := range data {
-    	fmt.Println(element.Workload_Name)
+			if (element.Status == "scheduling" && len(element.Filtered_Images) > 0) {
+				currJob := scheduler.Job{
+					Address: "localhost:50051",
+					RPCName: element.Workload_Name,
+					WorkloadId: element.Workload_Id,
+					Filter: element.Filter,
+				}
+				jobs <- currJob
+			}
     }
 
 		Publish(pubSock)

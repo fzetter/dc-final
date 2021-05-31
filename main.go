@@ -13,13 +13,14 @@ import (
 func main() {
 	log.Println("Welcome to the Distributed and Parallel Image Processing System")
 
+	// Channels
 	adminAccess := make(chan string)
+	jobs := make(chan scheduler.Job)
 
 	// Start Controller
-	go controller.Start(adminAccess)
+	go controller.Start(adminAccess, jobs)
 
 	// Start Scheduler
-	jobs := make(chan scheduler.Job)
 	go scheduler.Start(jobs)
 
 	// Send sample jobs
