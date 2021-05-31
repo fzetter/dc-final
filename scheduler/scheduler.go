@@ -39,9 +39,13 @@ func schedule(job Job) {
 	if err != nil { log.Fatalf("Could not greet: %v", err) }
 	log.Printf("Scheduler: RPC respose from %s : %s", job.Address, r.GetMessage())
 
-	r, err = c.GrayscaleFilter(ctx, &pb.HelloRequest{Name: job.RPCName})
+	s, err := c.GrayscaleFilter(ctx, &pb.JobRequest{Name: job.RPCName, WorkloadId: job.WorkloadId, Filter: job.Filter})
 	if err != nil { log.Fatalf("Could not greet: %v", err) }
-	log.Printf("Greeting: %s", r.GetMessage())
+	log.Printf("Greeting: %s", s.GetMessage())
+
+	t, err := c.BlurFilter(ctx, &pb.JobRequest{Name: job.RPCName, WorkloadId: job.WorkloadId, Filter: job.Filter})
+	if err != nil { log.Fatalf("Could not greet: %v", err) }
+	log.Printf("Greeting: %s", t.GetMessage())
 }
 
 /*

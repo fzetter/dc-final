@@ -66,8 +66,15 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 /*
    Grayscale
 */
-func (s *server) GrayscaleFilter(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-  return &pb.HelloReply{Message: "Grayscale Filter " + in.GetName()}, nil
+func (s *server) GrayscaleFilter(ctx context.Context, in *pb.JobRequest) (*pb.JobReply, error) {
+  return &pb.JobReply{Message: "Grayscale Filter " + in.GetName()}, nil
+}
+
+/*
+   Blur
+*/
+func (s *server) BlurFilter(ctx context.Context, in *pb.JobRequest) (*pb.JobReply, error) {
+  return &pb.JobReply{Message: "Blur Filter " + in.GetName()}, nil
 }
 
 /*

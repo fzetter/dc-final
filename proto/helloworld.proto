@@ -26,7 +26,8 @@ package proto;
 service Greeter {
   // Sends a greeting
   rpc SayHello (HelloRequest) returns (HelloReply) {}
-  rpc GrayscaleFilter (HelloRequest) returns (HelloReply) {}
+  rpc GrayscaleFilter (JobRequest) returns (JobReply) {}
+  rpc BlurFilter (JobRequest) returns (JobReply) {}
 }
 
 // The request message containing the user's name.
@@ -36,5 +37,15 @@ message HelloRequest {
 
 // The response message containing the greetings
 message HelloReply {
+  string message = 1;
+}
+
+message JobRequest {
+  string name = 1;
+  string workloadId = 2;
+  string filter = 3;
+}
+
+message JobReply {
   string message = 1;
 }

@@ -20,7 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type GreeterClient interface {
 	// Sends a greeting
 	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
-	GrayscaleFilter(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+	GrayscaleFilter(ctx context.Context, in *JobRequest, opts ...grpc.CallOption) (*JobReply, error)
+	BlurFilter(ctx context.Context, in *JobRequest, opts ...grpc.CallOption) (*JobReply, error)
 }
 
 type greeterClient struct {
@@ -40,9 +41,18 @@ func (c *greeterClient) SayHello(ctx context.Context, in *HelloRequest, opts ...
 	return out, nil
 }
 
-func (c *greeterClient) GrayscaleFilter(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error) {
-	out := new(HelloReply)
+func (c *greeterClient) GrayscaleFilter(ctx context.Context, in *JobRequest, opts ...grpc.CallOption) (*JobReply, error) {
+	out := new(JobReply)
 	err := c.cc.Invoke(ctx, "/proto.Greeter/GrayscaleFilter", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *greeterClient) BlurFilter(ctx context.Context, in *JobRequest, opts ...grpc.CallOption) (*JobReply, error) {
+	out := new(JobReply)
+	err := c.cc.Invoke(ctx, "/proto.Greeter/BlurFilter", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +65,8 @@ func (c *greeterClient) GrayscaleFilter(ctx context.Context, in *HelloRequest, o
 type GreeterServer interface {
 	// Sends a greeting
 	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
-	GrayscaleFilter(context.Context, *HelloRequest) (*HelloReply, error)
+	GrayscaleFilter(context.Context, *JobRequest) (*JobReply, error)
+	BlurFilter(context.Context, *JobRequest) (*JobReply, error)
 	mustEmbedUnimplementedGreeterServer()
 }
 
@@ -66,8 +77,11 @@ type UnimplementedGreeterServer struct {
 func (UnimplementedGreeterServer) SayHello(context.Context, *HelloRequest) (*HelloReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
 }
-func (UnimplementedGreeterServer) GrayscaleFilter(context.Context, *HelloRequest) (*HelloReply, error) {
+func (UnimplementedGreeterServer) GrayscaleFilter(context.Context, *JobRequest) (*JobReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GrayscaleFilter not implemented")
+}
+func (UnimplementedGreeterServer) BlurFilter(context.Context, *JobRequest) (*JobReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BlurFilter not implemented")
 }
 func (UnimplementedGreeterServer) mustEmbedUnimplementedGreeterServer() {}
 
@@ -101,7 +115,7 @@ func _Greeter_SayHello_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Greeter_GrayscaleFilter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
+	in := new(JobRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -113,7 +127,25 @@ func _Greeter_GrayscaleFilter_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/proto.Greeter/GrayscaleFilter",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).GrayscaleFilter(ctx, req.(*HelloRequest))
+		return srv.(GreeterServer).GrayscaleFilter(ctx, req.(*JobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Greeter_BlurFilter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(JobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GreeterServer).BlurFilter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Greeter/BlurFilter",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GreeterServer).BlurFilter(ctx, req.(*JobRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -132,6 +164,10 @@ var Greeter_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GrayscaleFilter",
 			Handler:    _Greeter_GrayscaleFilter_Handler,
+		},
+		{
+			MethodName: "BlurFilter",
+			Handler:    _Greeter_BlurFilter_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
