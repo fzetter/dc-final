@@ -35,17 +35,27 @@ func schedule(job Job) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: job.RPCName})
-	if err != nil { log.Fatalf("Could not greet: %v", err) }
-	log.Printf("Scheduler: RPC respose from %s : %s", job.Address, r.GetMessage())
+	// Blur
+	if (job.Filter == "blur") {
+		t, err := c.BlurFilter(ctx, &pb.JobRequest{Name: job.RPCName, WorkloadId: job.WorkloadId, Filter: job.Filter})
+		if err != nil { log.Fatalf("Could not greet: %v", err) }
+		log.Printf("Blur Res: %s", t.GetMessage())
 
-	s, err := c.GrayscaleFilter(ctx, &pb.JobRequest{Name: job.RPCName, WorkloadId: job.WorkloadId, Filter: job.Filter})
-	if err != nil { log.Fatalf("Could not greet: %v", err) }
-	log.Printf("Greeting: %s", s.GetMessage())
+	// Grayscale
+	} else if (job.Filter == "grayscale") {
 
-	t, err := c.BlurFilter(ctx, &pb.JobRequest{Name: job.RPCName, WorkloadId: job.WorkloadId, Filter: job.Filter})
-	if err != nil { log.Fatalf("Could not greet: %v", err) }
-	log.Printf("Greeting: %s", t.GetMessage())
+		s, err := c.GrayscaleFilter(ctx, &pb.JobRequest{Name: job.RPCName, WorkloadId: job.WorkloadId, Filter: job.Filter})
+		if err != nil { log.Fatalf("Could not greet: %v", err) }
+		log.Printf("Grayscale Res: %s", s.GetMessage())
+
+	// Hello
+	} else {
+		r, err := c.SayHello(ctx, &pb.HelloRequest{Name: job.RPCName})
+		if err != nil { log.Fatalf("Could not greet: %v", err) }
+		log.Printf("Hello Res: %s", r.GetMessage())
+	}
+
+
 }
 
 /*

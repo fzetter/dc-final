@@ -74,6 +74,13 @@ func (s *server) GrayscaleFilter(ctx context.Context, in *pb.JobRequest) (*pb.Jo
    Blur
 */
 func (s *server) BlurFilter(ctx context.Context, in *pb.JobRequest) (*pb.JobReply, error) {
+
+	log.Println("*************************")
+	log.Println(in.GetName())
+	log.Println(in.GetWorkloadId())
+	log.Println(in.GetFilter())
+	log.Println("*************************")
+
   return &pb.JobReply{Message: "Blur Filter " + in.GetName()}, nil
 }
 
