@@ -12,13 +12,15 @@ import (
 
 	"go.nanomsg.org/mangos"
 	"go.nanomsg.org/mangos/protocol/pub"
+	"go.nanomsg.org/mangos/protocol/req"
 
 	// register transports
 	_ "go.nanomsg.org/mangos/transport/all"
 )
 
 var apiAddress = "http://localhost:8080"
-var controllerAddress = "tcp://localhost:40899"
+var publisherAddress = "tcp://localhost:40899"
+var requestAdress = "tcp://localhost:50899"
 
 type WorkloadStruct struct {
     Workload_Id string `json:"workload_id" binding:"required"`
@@ -47,20 +49,43 @@ func date() string {
 /*
    Message Passing Socket Configuration
 */
-func MessagePassingConfig() (pubSock mangos.Socket) {
+func MessagePassingConfig() (pubSock mangos.Socket, reqSock mangos.Socket) {
 	// PubSub
-	var sock mangos.Socket
 	var err error
-	if sock, err = pub.NewSocket(); err != nil { die("Can't get new pub socket: %s", err) }
-	if err = sock.Listen(controllerAddress); err != nil { die("Can't listen on pub socket: %s", err.Error()) }
-	return sock
+	if pubSock, err = pub.NewSocket(); err != nil { die("Can't get new pub socket: %s", err) }
+	if err = pubSock.Listen(publisherAddress); err != nil { die("Can't listen on pub socket: %s", err.Error()) }
+
+	// ReqRep
+	if reqSock, err = req.NewSocket(); err != nil { die("Can't get new req socket: %s", err.Error()) }
+	if err = reqSock.Listen(requestAdress); err != nil { die("Can't listen on pub socket: %s", err.Error()) }
+
+	return pubSock, reqSock
 }
 
+/*
+   Publish
+*/
 func Publish(sock mangos.Socket) {
 	var err error
 	d := date()
 	log.Printf("Controller: Publishing Date %s\n", d)
 	if err = sock.Send([]byte(d)); err != nil { die("Failed publishing: %s", err.Error()) }
+	time.Sleep(time.Second * 3)
+}
+
+/*
+   Request
+*/
+func Request(sock mangos.Socket) {
+	var msg []byte
+	var err error
+	fmt.Printf("NODE1: SENDING DATE REQUEST %s\n", "DATE")
+	sock.Send([]byte("DATE"))
+	if msg, err = sock.Recv(); err == nil {
+		fmt.Printf("NODE1: RECEIVED DATE %s\n", string(msg))
+	}
+
+	//sock.Close()
 	time.Sleep(time.Second * 3)
 }
 
@@ -73,7 +98,7 @@ func Start(adminAccess chan string) {
 	token := <-adminAccess
 	bearer := "Bearer " + token
 
-	pubSock := MessagePassingConfig()
+	pubSock, reqSock := MessagePassingConfig()
 
 	for {
 		// Obtain Workloads List
@@ -96,6 +121,7 @@ func Start(adminAccess chan string) {
     }
 
 		Publish(pubSock)
+		go Request(reqSock)
 
 	}
 }

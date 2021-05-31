@@ -31,7 +31,8 @@ type server struct {
 }
 
 var (
-	controllerAddress = ""
+	publisherAddress  = "tcp://localhost:40899"
+	requestAdress  		= "tcp://localhost:50899"
 	workerName        = ""
 	tags              = ""
 )
@@ -72,7 +73,7 @@ func (s *server) GrayscaleFilter(ctx context.Context, in *pb.HelloRequest) (*pb.
    Init
 */
 func init() {
-	flag.StringVar(&controllerAddress, "controller", "tcp://localhost:40899", "Controller address")
+	flag.StringVar(&publisherAddress, "controller", "tcp://localhost:40899", "Controller address")
 	flag.StringVar(&workerName, "worker-name", "hard-worker", "Worker Name")
 	flag.StringVar(&tags, "tags", "gpu,superCPU,largeMemory", "Comma-separated worker tags")
 }
@@ -80,20 +81,25 @@ func init() {
 /*
    Message Passing Socket Configuration
 */
-
-func MessagePassingConfig() (subSock mangos.Socket) {
+func MessagePassingConfig() (subSock mangos.Socket, repSock mangos.Socket) {
 	// PubSub
-	var sock mangos.Socket
 	var err error
-	if sock, err = sub.NewSocket(); err != nil {die("Can't get new sub socket: %s", err.Error()) }
-	log.Printf("Connecting to controller on: %s", controllerAddress)
-	if err = sock.Dial(controllerAddress); err != nil { die("Can't dial on sub socket: %s", err.Error()) }
-	err = sock.SetOption(mangos.OptionSubscribe, []byte(""))
+	if subSock, err = sub.NewSocket(); err != nil {die("Can't get new sub socket: %s", err.Error()) }
+	log.Printf("Connecting to controller on: %s", publisherAddress)
+	if err = subSock.Dial(publisherAddress); err != nil { die("Can't dial on sub socket: %s", err.Error()) }
+	err = subSock.SetOption(mangos.OptionSubscribe, []byte(""))
 	if err != nil { die("Cannot subscribe: %s", err.Error()) }
-	return sock
 
+	// ReqRep
+	if repSock, err = rep.NewSocket(); err != nil { die("Can't get new rep socket: %s", err) }
+	if err = repSock.Dial(requestAdress); err != nil { die("Can't dial on sub socket: %s", err.Error()) }
+
+	return subSock, repSock
 }
 
+/*
+   Subscribe
+*/
 func Subscribe(sock mangos.Socket) {
 	var msg []byte
 	var err error
@@ -101,37 +107,36 @@ func Subscribe(sock mangos.Socket) {
 	log.Printf("Message-Passing: Worker(%s): Received %s\n", workerName, string(msg))
 }
 
-func Reply() {
-	var sock mangos.Socket
-	var err error
+/*
+   Reply
+*/
+func Reply(sock mangos.Socket) {
+
 	var msg []byte
+	var err error
 
-	if sock, err = rep.NewSocket(); err != nil { die("Can't get new rep socket: %s", err) }
-	if err = sock.Listen(controllerAddress); err != nil { die("Can't listen on rep socket: %s", err.Error()) }
+	msg, err = sock.Recv()
+	if err != nil { die("Cannot receive on rep socket: %s", err.Error()) }
 
-	for {
-
-		msg, err = sock.Recv()
-		if err != nil { die("Cannot receive on rep socket: %s", err.Error()) }
-
-		if string(msg) == "WORKER-STATE" {
-			fmt.Println("NODE0: RECEIVED STATE REQUEST")
-			d := date()
-			fmt.Printf("NODE0: SENDING DATE %s\n", d)
-			err = sock.Send([]byte(d))
-			if err != nil { die("Can't send reply: %s", err.Error()) }
-		}
-
+	if string(msg) == "DATE" {
+		d := date()
+		fmt.Printf("NODE0: SENDING DATE %s\n", d)
+		err = sock.Send([]byte(d))
+		if err != nil { die("Can't send reply: %s", err.Error()) }
 	}
 
 }
 
+/*
+   Join Cluster
+*/
 func joinCluster() {
 
-	subSock := MessagePassingConfig()
+	subSock, repSock := MessagePassingConfig()
 
 	for {
 		Subscribe(subSock)
+		Reply(repSock)
 	}
 
 }
