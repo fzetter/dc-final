@@ -28,6 +28,7 @@ func UploadImage(c *gin.Context, file *multipart.FileHeader, workload_id string,
 
   for index, element := range utils.Workloads {
     if element.Workload_Id == workload_id {
+      if (element.Status != "scheduling") { return utils.UploadImageStruct{}, errors.New("Error: Cannot Upload to Busy Workload") }
       found = true
       workloadName = element.Workload_Name
       imageFilename = workloadName + "_" + img_type[0:1] + "-" + uid + fileExt

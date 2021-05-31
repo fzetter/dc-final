@@ -42,6 +42,8 @@ func Start() {
 	if err = sock.Listen(controllerAddress); err != nil { die("Can't listen on pub socket: %s", err.Error()) }
 
 	for {
+		// Obtain workloads list
+
 		// Could also use sock.RecvMsg to get header
 		d := date()
 		//log.Printf("Controller: Publishing Date %s\n", d)
