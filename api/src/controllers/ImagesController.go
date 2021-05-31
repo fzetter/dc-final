@@ -26,3 +26,10 @@ func Upload(c *gin.Context) {
   })
 
 }
+
+// Get Image
+func GetImage(c *gin.Context) {
+  c.JSON(http.StatusOK, gin.H{
+			"image_id": c.Param("image_id"),
+	})
+}

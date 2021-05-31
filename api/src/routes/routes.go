@@ -24,7 +24,11 @@ func Init(app *gin.Engine) *gin.Engine {
  }
 
  // Images
- app.POST("/images", Authorization, controllers.Upload)
+ imageRoutes := app.Group("/images").Use(Authorization)
+ {
+  imageRoutes.POST("/", controllers.Upload)
+  imageRoutes.GET("/:image_id", controllers.GetImage)
+ }
 
  // Sessions
  app.POST("/login", controllers.Login)
