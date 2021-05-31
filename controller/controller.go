@@ -2,7 +2,7 @@ package controller
 
 import (
 	"fmt"
-	"log"
+	//"log"
 	"os"
 	"time"
 
@@ -44,7 +44,7 @@ func Start() {
 	for {
 		// Could also use sock.RecvMsg to get header
 		d := date()
-		log.Printf("Controller: Publishing Date %s\n", d)
+		//log.Printf("Controller: Publishing Date %s\n", d)
 
 		if err = sock.Send([]byte(d)); err != nil { die("Failed publishing: %s", err.Error()) }
 

@@ -20,7 +20,7 @@ func Login(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err.Error())
-    c.JSON(http.StatusNotFound, err.Error())
+    c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
 	} else {
 		c.JSON(http.StatusOK, val)
 	}
@@ -55,9 +55,11 @@ func Status(c *gin.Context) {
   splitTime := strings.Split(currTime, ".")
   time := splitTime[0]
 
-  val := utils.MessageStruct {
-    Message: "Hi " + account.User + ", the DPIP System is Up and Running",
-    Time: time,
+  val := utils.StatusStruct {
+    User: account.User,
+    System_Name: "DPIP System",
+    Server_Time: time,
+    Active_Workloads: 0,
   }
 
   c.JSON(http.StatusOK, val)

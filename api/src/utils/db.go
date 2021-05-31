@@ -3,8 +3,8 @@ package utils
 import ()
 
 var JWTKey = []byte("spH2x-3@KUwG8#HP")
-
 var Tokens []string
+var Workloads = []WorkloadStruct {}
 
 var Users = []UserStruct {
     UserStruct {

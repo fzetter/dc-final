@@ -1,16 +1,21 @@
 package controllers
 
 import (
-  "strconv"
+  "fmt"
+  "strings"
   "net/http"
+  "path/filepath"
 	"github.com/gin-gonic/gin"
+  "github.com/fzetter/dc-final/api/src/models"
 )
 
-// Upload
-func Upload(c *gin.Context) {
+// Upload Image
+func UploadImage(c *gin.Context) {
 
-  // Single File Upload
+  // File Upload
   file, err := c.FormFile("data")
+  workload_id := c.PostForm("workload_id")
+  img_type := c.PostForm("type")
 
   // No File Received
   if err != nil {
@@ -18,18 +23,23 @@ func Upload(c *gin.Context) {
       return
   }
 
-  // Resolve
-  c.JSON(http.StatusOK, gin.H{
-      "message": "An image has been successfully uploaded",
-      "filename": file.Filename,
-      "size": strconv.FormatInt(int64(file.Size/1000), 10) + "kb",
-  })
+	val, err := models.UploadImage(c, file, workload_id, img_type)
+
+	if err != nil {
+		fmt.Println(err.Error())
+    c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(http.StatusOK, val)
+	}
 
 }
 
 // Get Image
 func GetImage(c *gin.Context) {
-  c.JSON(http.StatusOK, gin.H{
-			"image_id": c.Param("image_id"),
-	})
+  
+  file := strings.Split(c.Param("image_id"), "_")
+  targetPath := filepath.Join("images/" + file[0], file[1])
+  //c.FileAttachment(targetPath, "filename.png")
+  c.File(targetPath)
+
 }
