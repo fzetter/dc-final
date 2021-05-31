@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	pb "github.com/CodersSquad/dc-final/proto"
+	pb "github.com/fzetter/dc-final/proto"
 	"google.golang.org/grpc"
 )
 
@@ -27,7 +27,7 @@ func schedule(job Job) {
 	conn, err := grpc.Dial(job.Address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil { log.Fatalf("Did not connect: %v", err) }
 	defer conn.Close()
-	
+
 	c := pb.NewGreeterClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
