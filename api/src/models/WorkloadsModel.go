@@ -40,6 +40,13 @@ func CreateWorkload(body *utils.CreateWorkloadStruct) (message utils.WorkloadStr
 
 }
 
+// GET Workloads
+func GetWorkloads() (message []utils.WorkloadStruct, err error) {
+
+  return utils.Workloads, nil
+
+}
+
 // GET Workload
 func GetWorkload(workload_id string) (message utils.WorkloadStruct, err error) {
 

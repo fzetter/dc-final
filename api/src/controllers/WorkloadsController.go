@@ -25,6 +25,20 @@ func CreateWorkload(c *gin.Context) {
 
 }
 
+// GET Workloads
+func GetWorkloads(c *gin.Context) {
+
+	val, err := models.GetWorkloads()
+
+	if err != nil {
+		fmt.Println(err.Error())
+    c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	} else {
+		c.JSON(http.StatusOK, val)
+	}
+
+}
+
 // GET Workload
 func GetWorkload(c *gin.Context) {
 

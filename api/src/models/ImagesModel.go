@@ -30,14 +30,14 @@ func UploadImage(c *gin.Context, file *multipart.FileHeader, workload_id string,
     if element.Workload_Id == workload_id {
       found = true
       workloadName = element.Workload_Name
-      imageFilename = workloadName + "_" + uid + fileExt
+      imageFilename = workloadName + "_" + img_type[0:1] + "-" + uid + fileExt
       utils.Workloads[index].Filtered_Images = append(element.Filtered_Images, imageFilename)
     }
   }
   if (found == false) { return utils.UploadImageStruct{}, errors.New("Error: Workload UUID Not Found") }
 
   // ** SAVE IMAGE
-  err = c.SaveUploadedFile(file, "images/" + workloadName + "/" + uid + fileExt)
+  err = c.SaveUploadedFile(file, "images/" + workloadName + "/" + img_type[0:1] + "-" + uid + fileExt)
 	if err != nil {
     fmt.Printf("Error Uploading File", err)
     return utils.UploadImageStruct{}, errors.New("Error: Could Not Upload Image")

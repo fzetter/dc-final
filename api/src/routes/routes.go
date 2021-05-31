@@ -39,6 +39,7 @@ func Init(app *gin.Engine) *gin.Engine {
   workloadRoutes := app.Group("/workloads").Use(Authorization)
   {
    workloadRoutes.POST("/", controllers.CreateWorkload)
+   workloadRoutes.GET("/", controllers.GetWorkloads)
    workloadRoutes.GET("/:workload_id", controllers.GetWorkload)
   }
 
