@@ -59,7 +59,7 @@ func Status(c *gin.Context) {
     User: account.User,
     System_Name: "DPIP System",
     Server_Time: time,
-    Active_Workloads: 0,
+    Active_Workloads: utils.Workers.ActiveWorkers,
   }
 
   c.JSON(http.StatusOK, val)

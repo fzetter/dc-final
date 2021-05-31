@@ -15,6 +15,8 @@ import (
 	"go.nanomsg.org/mangos/protocol/pub"
 	"go.nanomsg.org/mangos/protocol/req"
 
+	"github.com/fzetter/dc-final/api/src/utils"
+
 	// register transports
 	_ "go.nanomsg.org/mangos/transport/all"
 )
@@ -134,6 +136,8 @@ func Start(adminAccess chan string) {
 
 		Publish(pubSock)
 		go Request(reqSock)
+
+		utils.Workers = utils.ControllerStruct{ActiveWorkers: numberOfWorkers, BusyWorkers: numberOfBusyWorkers,}
 
 	}
 }

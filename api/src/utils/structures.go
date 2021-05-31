@@ -13,6 +13,13 @@ type ClaimsStruct struct {
     jwt.StandardClaims
 }
 
+// CONTROLLER WORKERS STATUS
+
+type ControllerStruct struct {
+    ActiveWorkers int `json:"active_workers" binding:"required"`
+    BusyWorkers int `json:"busy_workers" binding:"required"`
+}
+
 // IMAGES
 type UploadImageStruct struct {
     Workload_Id string `json:"workload_id" binding:"required"`
