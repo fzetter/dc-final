@@ -96,7 +96,6 @@ func (s *server) BlurFilter(ctx context.Context, in *pb.JobRequest) (*pb.JobRepl
 	// body, err := ioutil.ReadAll(resp.Body)
 	// if err != nil { die("Error while reading response: %s", err.Error()) }
 
-
 }
 
 /*
