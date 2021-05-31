@@ -113,12 +113,9 @@ func main() {
 	rpcPort := getAvailablePort()
 	log.Printf("Starting RPC Service on localhost:%v", rpcPort)
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", rpcPort))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
+	if err != nil { log.Fatalf("Failed to listen: %v", err) }
+
 	s := grpc.NewServer()
 	pb.RegisterGreeterServer(s, &server{})
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+	if err := s.Serve(lis); err != nil { log.Fatalf("Failed to serve: %v", err) }
 }
