@@ -23,6 +23,7 @@ import (
 
 var (
 	defaultRPCPort = 50051
+	busy = 0
 )
 
 // server is used to implement helloworld.GreeterServer.
@@ -118,10 +119,10 @@ func Reply(sock mangos.Socket) {
 	msg, err = sock.Recv()
 	if err != nil { die("Cannot receive on rep socket: %s", err.Error()) }
 
-	if string(msg) == "DATE" {
-		d := date()
-		fmt.Printf("NODE0: SENDING DATE %s\n", d)
-		err = sock.Send([]byte(d))
+	if string(msg) == "WORKER-STATUS" {
+		fmt.Printf("Worker: Sending Status\n")
+		var msg = []byte(fmt.Sprintf("%d", busy))
+		err = sock.Send(msg)
 		if err != nil { die("Can't send reply: %s", err.Error()) }
 	}
 

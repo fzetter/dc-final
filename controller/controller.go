@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"strconv"
 	"io/ioutil"
 	"net/http"
 	"encoding/json"
@@ -21,6 +22,8 @@ import (
 var apiAddress = "http://localhost:8080"
 var publisherAddress = "tcp://localhost:40899"
 var requestAdress = "tcp://localhost:50899"
+var numberOfWorkers = 0
+var numberOfBusyWorkers = 0
 
 type WorkloadStruct struct {
     Workload_Id string `json:"workload_id" binding:"required"`
@@ -29,6 +32,11 @@ type WorkloadStruct struct {
     Status string `json:"status" binding:"required"`
     Running_Jobs int `json:"running_jobs" binding:"required"`
     Filtered_Images []string `json:"filtered_images" binding:"required"`
+}
+
+type Status struct {
+	Workers int
+	BusyWokers int
 }
 
 /*
@@ -79,10 +87,14 @@ func Publish(sock mangos.Socket) {
 func Request(sock mangos.Socket) {
 	var msg []byte
 	var err error
-	fmt.Printf("NODE1: SENDING DATE REQUEST %s\n", "DATE")
-	sock.Send([]byte("DATE"))
+	fmt.Printf("Controller: Requesting Workers Status\n")
+	numberOfWorkers = 0
+	sock.Send([]byte("WORKER-STATUS"))
 	if msg, err = sock.Recv(); err == nil {
-		fmt.Printf("NODE1: RECEIVED DATE %s\n", string(msg))
+		fmt.Printf("Controller: Received Status %s\n", string(msg))
+		num, _ := strconv.Atoi(string(msg))
+		numberOfWorkers = numberOfWorkers + 1
+		if (num == 1) { numberOfBusyWorkers = numberOfBusyWorkers + 1 }
 	}
 
 	//sock.Close()
