@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	//"net/http"
 	//"github.com/anthonynsimon/bild/effect"
 
 	pb "github.com/fzetter/dc-final/proto"
@@ -81,7 +82,21 @@ func (s *server) BlurFilter(ctx context.Context, in *pb.JobRequest) (*pb.JobRepl
 	log.Println(in.GetFilter())
 	log.Println("*************************")
 
-  return &pb.JobReply{Message: "Blur Filter " + in.GetName()}, nil
+	return &pb.JobReply{Message: "Blur Filter " + in.GetName()}, nil
+
+	// Obtain Image
+	// req, err := http.NewRequest("GET", apiAddress + "/images/" + imageUUID, nil)
+	// req.Header.Add("Authorization", bearer)
+	//
+	// client := &http.Client{}
+	// resp, err := client.Do(req)
+	// if err != nil { die("Error on request: %s", err.Error()) }
+	// defer resp.Body.Close()
+	//
+	// body, err := ioutil.ReadAll(resp.Body)
+	// if err != nil { die("Error while reading response: %s", err.Error()) }
+
+
 }
 
 /*
